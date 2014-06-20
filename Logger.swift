@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 // #pragma mark - == Operator Overload ==
 func <= (left: LoggerLevel?, right: LoggerLevel?) -> Bool {
     switch (left, right) {
@@ -37,6 +38,24 @@ enum LoggerLevel: Int {
         }
     }
 }
+
+#if DEBUG
+    func DLog(function: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__, #args: CVarArg...) {
+        var message = "";
+        for (i, arg) in enumerate(args) {
+            if i != 0 {
+                print(" ", &message);
+            }
+            print(arg, &message);
+        }
+    
+        NSLog("[%@:%d] [%@] %@", fileName.lastPathComponent, lineNumber, function, message);
+    }
+#else
+    func DLog(#args: Any...) {
+        
+    }
+#endif
 
 class Logger {
     // #pragma mark - == Props ==
@@ -103,7 +122,7 @@ class Logger {
         
         return _SharedInstanceStatics.sharedInstance!;
     }
-    
+
     // #pragma mark - == Public Log Methods ==
     func debug(functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__, functionNameDuplicate: String = __FUNCTION__, logMessage: Any...) {
         if self.baseLoggerLevel <= LoggerLevel.Debug {
