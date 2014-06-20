@@ -158,9 +158,11 @@ class Logger {
         self.baseLoggerLevel = loggerLevel;
         
         self.dateFormatter = NSDateFormatter();
-        self.dateFormatter!.timeZone = NSTimeZone(name: "UTC");
-        self.dateFormatter!.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
-        
+        if let dateFormatter = self.dateFormatter {
+            dateFormatter.timeZone = NSTimeZone(name: "UTC");
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
+        }
+
         if let filePath = filePath {
             self.writeToFileURL = NSURL.fileURLWithPath(filePath.stringByDeletingPathExtension);
         }
