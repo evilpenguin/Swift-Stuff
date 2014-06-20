@@ -193,16 +193,13 @@ class Logger {
     
     func verboseLog(logMessage: String = "", logLevel: LoggerLevel = .Debug, functionName: String = __FUNCTION__, fileName: String = __FILE__, lineNumber: Int = __LINE__, functionNameDuplicate: String = __FUNCTION__) {
         if self.baseLoggerLevel <= logLevel {
-            var realFunctionName: String = functionName;
-            let functionNameDuplicateLength = functionNameDuplicate.lengthOfBytesUsingEncoding(NSUTF8StringEncoding);
-            let functionNameLength = functionName.lengthOfBytesUsingEncoding(NSUTF8StringEncoding);
-            
-            if functionNameLength < functionNameDuplicateLength {
+            var finalFunctionName: String = functionName;
+            if functionNameDuplicate.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) < functionName.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) {
                 let range: Range = functionNameDuplicate.rangeOfString(functionName, options: .LiteralSearch);
-                realFunctionName = functionNameDuplicate.stringByReplacingCharactersInRange(range, withString: "");
+                finalFunctionName = functionNameDuplicate.stringByReplacingCharactersInRange(range, withString: "");
             }
             
-            let details: String = "[\(fileName.lastPathComponent):\(lineNumber)] [\(realFunctionName)] \(logMessage)";
+            let details: String = "[\(fileName.lastPathComponent):\(lineNumber)] [\(finalFunctionName)] \(logMessage)";
             self.log(message: details, logLevel: logLevel);
         }
     }
