@@ -64,40 +64,8 @@ class Logger {
     var printToConsole: Bool = true;
     var dateFormatter: NSDateFormatter? = nil;
     var fileHandle: NSFileHandle?    = nil;
-    var writeToFileURL: NSURL? = nil {
-        didSet {
-            self.fileHandle?.closeFile();
-            self.fileHandle = nil;
-            
-            if let writeToFileURL = self.writeToFileURL {
-                let fileManager: NSFileManager = NSFileManager.defaultManager();
-                var hasFile = fileManager.fileExistsAtPath(writeToFileURL.path);
-                var writeAppDetails = false;
-                if !hasFile {
-                    writeAppDetails = true;
-                    hasFile = fileManager.createFileAtPath(writeToFileURL.path, contents: nil, attributes: nil);
-                    if !hasFile {
-                        self.log(message: "Failed to create file at path \(writeToFileURL.path)", logLevel: .Error);
-                    }
-                }
-                
-                var fileError: NSError? = nil;
-                self.fileHandle = NSFileHandle.fileHandleForWritingToURL(self.writeToFileURL, error: &fileError);
-                
-                if let fileHandle = self.fileHandle {
-                    fileHandle.seekToEndOfFile();
-                    
-                    if writeAppDetails {
-                        self.logAppDetails();
-                    }
-                }
-                else {
-                    self.log(message: "Failed to open log file for writing with error: \(fileError?.localizedDescription!)", logLevel: .Error);
-                }
-            }
-        }
-    }
-    
+    var fileURL: NSURL? = nil;
+
     // #pragma mark - == Static vars ==
     struct _SharedInstanceStatics {
         static var sharedInstanceOnceToken: dispatch_once_t = 0;
@@ -110,7 +78,7 @@ class Logger {
     }
 
     deinit {
-        self.fileHandle?.closeFile();
+        self.closeFile();
     }
     
     class func sharedInstance(loggerLevel: LoggerLevel = .Debug, filePath: String? = nil, printToConsole: Bool = true) -> Logger {
@@ -164,10 +132,13 @@ class Logger {
         }
 
         if let filePath = filePath {
-            self.writeToFileURL = NSURL.fileURLWithPath(filePath.stringByDeletingPathExtension);
+            self.fileURL = NSURL.fileURLWithPath(filePath.stringByDeletingPathExtension);
+            self.createFile();
+            self.openFileForWriting();
         }
         else {
-            self.writeToFileURL = nil;
+            self.fileURL = nil;
+            self.closeFile();
         }
     }
     
@@ -203,8 +174,45 @@ class Logger {
             self.log(message: details, logLevel: logLevel);
         }
     }
+
+    func closeFile() {
+        self.fileHandle?.closeFile();
+        self.fileHandle = nil;
+    }
+    
+    func deleteFile() {
+        if let fileURL = self.fileURL {
+            let fileManager: NSFileManager = NSFileManager.defaultManager();
+            if fileManager.fileExistsAtPath(fileURL.path) {
+                fileManager.removeItemAtURL(fileURL, error: nil);
+            }
+        }
+    }
     
     // #pragma mark - == Private Methods ==
+    func createFile() {
+        if let fileURL = self.fileURL {
+            let fileManager: NSFileManager = NSFileManager.defaultManager();
+            if !fileManager.fileExistsAtPath(fileURL.path) {
+                if !fileManager.createFileAtPath(fileURL.path, contents: nil, attributes: nil) {
+                    self.log(message: "Failed to create file at path \(fileURL.path)", logLevel: .Error);
+                }
+            }
+        }
+    }
+    
+    func openFileForWriting() {
+        var fileError: NSError? = nil;
+        self.fileHandle = NSFileHandle.fileHandleForWritingToURL(self.fileURL, error: &fileError);
+        
+        if let fileHandle = self.fileHandle {
+            fileHandle.seekToEndOfFile();
+        }
+        else {
+            self.log(message: "Failed to open log file for writing with error: \(fileError?.localizedDescription!)", logLevel: .Error);
+        }
+    }
+    
     func logAppDetails() {
         let infoDictionary: NSDictionary = NSBundle.mainBundle().infoDictionary;
         let processInfo: NSProcessInfo = NSProcessInfo.processInfo();
@@ -228,7 +236,7 @@ class Logger {
     }
     
     func isFileSizeOverMax() -> Bool {
-        if let writeToFileURL = self.writeToFileURL {
+        if let writeToFileURL = self.fileURL {
             let fileAttributes = NSFileManager.defaultManager().attributesOfItemAtPath(writeToFileURL.path, error: nil);
             
             return fileAttributes.fileSize() > self.maxFileSize;
