@@ -7,6 +7,11 @@
 
 import Foundation
 
+struct SetGenerator<KeyType: Hashable> : Generator {
+    var _base: DictionaryGenerator<KeyType, ()>;
+    mutating func next() -> KeyType? { return self._base.next()?.0 }
+}
+
 struct Set<T: Hashable> {
     var _map: Dictionary<T, ()> = [:];
     
@@ -18,9 +23,9 @@ struct Set<T: Hashable> {
     }
     
     // Return the values for the map
-    var values: Array<T> {
+    var values: MapCollectionView<Dictionary<T, ()>, T> {
         get {
-            return Array(self._map.keys);
+            return self._map.keys;
         }
     }
 
@@ -47,5 +52,9 @@ struct Set<T: Hashable> {
     // Clear the entire map, remove capacity
     mutating func clear(keepCapacity: Bool = false) {
         self._map.removeAll(keepCapacity: keepCapacity);
+    }
+    
+    func generate() -> SetGenerator<T> {
+        return SetGenerator(_base: self._map.generate());
     }
 }
