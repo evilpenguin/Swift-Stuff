@@ -8,7 +8,9 @@
 import Foundation
 
 class Set<T: Equatable> {
-    var map = Dictionary<String, T>();
+    @lazy var map: Dictionary<String, T> = {
+        return Dictionary<String, T>();
+    }();
     
     // Return the count of the map
     var count: Int {
