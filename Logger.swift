@@ -206,7 +206,9 @@ class Logger {
         self.fileHandle = NSFileHandle.fileHandleForWritingToURL(self.fileURL, error: &fileError);
         
         if let fileHandle = self.fileHandle {
-            fileHandle.seekToEndOfFile();
+            if fileHandle.seekToEndOfFile() == 0 {
+                self.logAppDetails();
+            }
         }
         else {
             self.log(message: "Failed to open log file for writing with error: \(fileError?.localizedDescription!)", logLevel: .Error);
