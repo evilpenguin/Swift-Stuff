@@ -23,11 +23,7 @@ struct Set<T: Hashable> {
             return Array(self._map.keys);
         }
     }
-    
-    func item(item: T) -> ()? {
-        return self._map[item];
-    }
-    
+
     // Return if the map is empty or not
     func isEmpty() -> Bool {
         return self.count <= 0;
@@ -52,16 +48,4 @@ struct Set<T: Hashable> {
     mutating func clear(keepCapacity: Bool = false) {
         self._map.removeAll(keepCapacity: keepCapacity);
     }
-    
-    // Add subscripting based on index: Int
-    subscript(index: Int) -> ()? {
-        var array = self.values;
-
-        if array.count < index {
-            return self.item(array[index]);
-        }
-            
-        return nil;
-    }
-    
 }
