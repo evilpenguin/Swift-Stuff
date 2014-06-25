@@ -5,8 +5,6 @@
 //  Copyright (c) 2014 James D. Emrich. All rights reserved.
 //
 
-import Foundation
-
 struct SetGenerator<KeyType: Hashable> : Generator {
     var _base: DictionaryGenerator<KeyType, ()>;
     mutating func next() -> KeyType? { return self._base.next()?.0 }
