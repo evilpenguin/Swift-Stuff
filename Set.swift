@@ -7,90 +7,61 @@
 
 import Foundation
 
-class Set<T: Equatable> {
-    @lazy var map: Dictionary<String, T> = {
-        return Dictionary<String, T>();
-    }();
+struct Set<T: Hashable> {
+    var _map: Dictionary<T, ()> = [:];
     
     // Return the count of the map
     var count: Int {
         get {
-            return self.map.count;
+            return self._map.count;
         }
     }
     
-    // Return the keys for the map
-    var keys: Array<String> {
-        get {
-            return Array(self.map.keys);
-        }
-    };
-
     // Return the values for the map
     var values: Array<T> {
         get {
-            return Array(self.map.values);
+            return Array(self._map.keys);
         }
+    }
+    
+    func item(item: T) -> ()? {
+        return self._map[item];
     }
     
     // Return if the map is empty or not
     func isEmpty() -> Bool {
-        return self.map.count <= 0;
+        return self.count <= 0;
     }
     
     // Return if the map contains the element or not
     func contains(item: T) -> Bool {
-        return self.map.indexForKey("\(item)") != nil;
+        return self._map[item] != nil;
     }
     
     // Insert the given item
-    func insert(item: T) {
-        if (!self.contains(item)) {
-            self.map.updateValue(item, forKey: "\(item)");
-        }
+    mutating func insert(item: T) {
+        self._map[item] = ();
     }
-    
-    // Add the given item
-    func add(item: T) {
-        self.insert(item);
-    }
-    
+
     // Remove the give item
-    func remove(item: T) {
-        self.map.removeValueForKey("\(item)");
+    mutating func remove(item: T) {
+        self._map.removeValueForKey(item);
     }
     
     // Clear the entire map, remove capacity
-    func clear(keepCapacity: Bool = false) {
-        self.map.removeAll(keepCapacity: keepCapacity);
-    }
-    
-    // Clone the map, and return a set 
-    // O(n)
-    func clone() -> Set {
-        var cloneDictionary = Set();
-
-        for key: String in self.map.keys {
-            if let item = self[key] {
-                cloneDictionary.insert(item);
-            }
-        }
-        
-        return cloneDictionary;
-    }
-    
-    // Add subscripting based on key: String
-    subscript(key: String) -> T? {
-        return self.map[key];
+    mutating func clear(keepCapacity: Bool = false) {
+        self._map.removeAll(keepCapacity: keepCapacity);
     }
     
     // Add subscripting based on index: Int
-    subscript(index: Int) -> T? {
-        var array = self.keys;
-        if index < array.count {
-            return self.map[array[index]];
+    subscript(index: Int) -> ()? {
+        var array = self.values;
+
+        if array.count < index {
+            return self.item(array[index]);
         }
             
         return nil;
     }
+    
 }
