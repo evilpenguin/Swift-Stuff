@@ -86,7 +86,7 @@ class Set<T: Equatable> {
     
     // Add subscripting based on index: Int
     subscript(index: Int) -> T? {
-        var array = self.keys
+        var array = self.keys;
         if index < array.count {
             return self.map[array[index]];
         }
