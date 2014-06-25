@@ -26,6 +26,13 @@ class Set<T: Equatable> {
         }
     };
 
+    // Return the values for the map
+    var values: Array<T> {
+        get {
+            return Array(self.map.values);
+        }
+    }
+    
     // Return if the map is empty or not
     func isEmpty() -> Bool {
         return self.map.count <= 0;
@@ -75,5 +82,15 @@ class Set<T: Equatable> {
     // Add subscripting based on key: String
     subscript(key: String) -> T? {
         return self.map[key];
+    }
+    
+    // Add subscripting based on index: Int
+    subscript(index: Int) -> T? {
+        var array = self.keys
+        if index < array.count {
+            return self.map[array[index]];
+        }
+            
+        return nil;
     }
 }
