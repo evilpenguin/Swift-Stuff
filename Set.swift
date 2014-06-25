@@ -54,6 +54,7 @@ struct Set<T: Hashable> {
         self._map.removeAll(keepCapacity: keepCapacity);
     }
     
+    // Make the set enumerable
     func generate() -> SetGenerator<T> {
         return SetGenerator(_base: self._map.generate());
     }
